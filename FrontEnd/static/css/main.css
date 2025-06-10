@@ -1,0 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap");
+
+.text-style {
+  font-family: "Oswald", sans-serif;
+}
+
+.nav-color {
+  background-color: rgb(0, 0, 120);
+}
+
+.card-bg-color {
+  background-color: rgb(221, 157, 97);
+}
+
+.label-form-color {
+  color: #ffffff;
+}
+
+.card-header {
+  font-weight: 700;
+}
+
+.img-logo-navbar {
+  height: 45px;
+  width: 50px;
+}

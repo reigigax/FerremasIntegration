@@ -1,0 +1,52 @@
+{% extends "components/layout.html" %}
+{% block content %}
+<h1>TEST</h1>
+    <h6>Obtener Productos [GET]</h6>
+    <p>
+    {% if products %}
+        {% for product in products.productos %}
+            {{ product.id_producto }} {{ product.codigo_producto }} {{product.marca_producto}} {{product.nombre_producto}} {{product.categoria_producto}} {{product.stock}} {{product.sucursal}} {{product.valor}} {{product.descripcion}}{{product.img_producto}}
+        {% endfor %}
+    {% endif %}
+    </p>
+
+    <h6>Obtener Productos por Id [GET]</h6>
+    <div class="container-fluid">
+        <form class="d-flex" id="searchForm">
+            <input class="form-control me-2" type="text" placeholder="Id del Producto" id="id_product"/>
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+    </div>
+    <div id="resultado"></div>
+
+    <h6>Obtener Valor Dolar [GET]</h6>
+    <!--TODO hacer el combobox que modifique todos los valores en pesos a dolares-->
+    <p>
+        {% if dolar_value %}
+            {{ dolar_value["Valor Dolar"] }}
+        {% endif %}
+    </p>
+
+    <h6>Realizar Pago WebPay [POST]</h6>
+    <form id="webpayForm" class="row gx-3 gy-2 align-items-center">
+        {{ form.hidden_tag() }}
+        <div class="col-sm-3">
+            {{ form.buy_order.label(class="form-control-label") }}
+            {{ form.buy_order(class="form-control form-control-lg") }}
+        </div>
+        <div class="col-sm-3">
+            {{ form.session.label(class="form-control-label") }}
+            {{ form.session(class="form-control form-control-lg") }}
+        </div>
+        <div class="col-sm-3">
+            {{ form.amount.label(class="form-control-label") }}
+            {{ form.amount(class="form-control form-control-lg") }}
+        </div>
+        <div class="col-auto">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+
+    <script src="{{ url_for('static', filename='js/test_buscar_productos.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/test_realizar_pago.js') }}"></script>
+{% endblock %}
