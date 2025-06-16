@@ -20,6 +20,9 @@ conn = MySQL(app)
 #? Esto permite solicitudes desde cualquier origen
 CORS(app)
 
+#? Url Raiz de las APIs
+url_base="http://127.0.0.1:5001"
+
 #* API Obtencion de Productos [GET]
 @app.route("/api/obtener-productos", methods=["GET"])
 def get_products():
@@ -35,6 +38,25 @@ def get_products():
             products.append(product)
         
         return jsonify({'productos':products, 'mensaje':'Productos Obtenidos'})
+    except Exception as ex:
+        return jsonify({'mensaje_error':'Productos no Encontrados','descripcion_error':f"Error: {str(ex)}"})
+
+#* API Filtro de Productos por sucursal [GET]
+@app.route('/api/obtener-productos/sucursal/<sucursal>', methods=["GET"])
+def filtro_productos_sucursal(sucursal):
+    try:
+        cursor = conn.connection.cursor()
+        sql = "SELECT id_producto, codigo_producto, marca_producto, nombre_producto, categoria_producto, stock, sucursal, valor FROM productos WHERE sucursal = '{0}'".format(sucursal)
+        cursor.execute(sql)
+        data = cursor.fetchone()
+        products = []
+
+        if data != None:
+            product = {'id_producto':data[0], 'codigo_producto':data[1], 'marca_producto':data[2], 'nombre_producto':data[3], 'categoria_producto':data[4], 'stock':data[5], 'sucursal':data[6], 'valor':data[7]}
+            products.append(product)
+            return jsonify({'producto':products, 'mensaje':'Productos Encontrado'})
+        else:
+            return jsonify({'mensaje','Productos no Encontrados o No Disponibles en Sucursal'})
     except Exception as ex:
         return jsonify({'mensaje_error':'Productos no Encontrados','descripcion_error':f"Error: {str(ex)}"})
 
@@ -56,7 +78,7 @@ def get_product_by_id(id_product):
             product = {'id_producto':data[0], 'codigo_producto':data[1], 'marca_producto':data[2], 'nombre_producto':data[3], 'categoria_producto':data[4], 'stock':data[5], 'sucursal':data[6], 'valor':data[7]}
             return jsonify({'producto':product, 'mensaje':'Producto Encontrado'})
         else:
-            return jsonify({'mensaje','Producto no Encontrado o Fuera de Stock'})            
+            return jsonify({'mensaje','Producto no Encontrado o Fuera de Stock'})
     except Exception as ex:
         return jsonify({'mensaje_error':'Producto no Encontrado','descripcion_error':f"Error: {str(ex)}"})
 
@@ -151,7 +173,157 @@ def realizar_pago():
     except Exception as ex:
         return jsonify({'mensaje':'Error al contactar con WebPay', 'descripcion_error':f"Error: {str(ex)}"})
 
-#TODO Funciones del Carrito
+#* API Añadir Producto al Carrito [POST] [PUT]
+@app.route('/api/carrito/agregar-producto/<id_producto>', methods=['POST', 'PUT'])
+def agregar_producto_carrito(id_producto):
+    try:
+        data_request_post = request.get_json()
+        quantity_product = data_request_post["cantidad"]
+        quantity_product = int(quantity_product)
+        
+        api_producto_in_carrito = url_base + f"/api/carrito/producto/{id_producto}"
+        respuesta_api_producto_in_carrito = requests.get(api_producto_in_carrito)
+        producto_in_carrito = respuesta_api_producto_in_carrito.json()
+
+        api_get_product = f"http://127.0.0.1:5001/api/obtener-producto-id/{id_producto}"
+        product = requests.get(api_get_product)
+        data_product = product.json()
+        
+        if quantity_product <= 0:
+            return jsonify({"mensaje":"Cantidad para Agregar debe de ser mayor o igual a 1"})
+        
+        if producto_in_carrito["mensaje"] == "Producto no se encuentra en el Carrito":
+            if 'producto' not in data_product:
+                return jsonify({"error": "Producto no encontrado"}), 404
+            
+            cursor = conn.connection.cursor()
+            sql = "INSERT INTO carrito (id_producto, cantidad_producto) VALUES({0},{1})".format(data_product["producto"]["id_producto"], quantity_product)
+            cursor.execute(sql)
+            conn.connection.commit()
+
+            return jsonify({"mensaje":"Producto Agregado Satisfactoriamente al Carrito"})
+        else:
+            cantidad_actual = producto_in_carrito["producto_carrito"]["cantidad_producto"]
+            cantidad_total = cantidad_actual + quantity_product
+
+            cursor = conn.connection.cursor()
+            sql = f"UPDATE carrito SET cantidad_producto = {cantidad_total} WHERE id_producto = {id_producto}"
+            cursor.execute(sql)
+            conn.connection.commit()
+
+            return jsonify({"mensaje":"Producto Agregado Satisfactoriamente al Carrito"})
+    except Exception as ex:
+        return jsonify({'mensaje':'Error al Agregar Producto al Carrito', 'descripcion_error':f"Error: {str(ex)}"})
+
+#* API Obtener Productos del Carrito [GET]
+@app.route('/api/carrito', methods=['GET'])
+def obtener_productos_carrito():
+    try:
+        cursor = conn.connection.cursor()
+        sql = "SELECT c.id_producto, p.codigo_producto, p.marca_producto, p.nombre_producto, p.categoria_producto, p.sucursal, p.valor, p.stock, p.descripcion, p.img_producto, SUM(c.cantidad_producto) FROM carrito c INNER JOIN productos p ON c.id_producto = p.id_producto GROUP BY id_producto"
+        cursor.execute(sql)
+        data = cursor.fetchall()
+        productos_carrito = []
+
+        if data:
+            for row in data:
+                product = {'id_producto':row[0], 'codigo_producto':row[1], 'marca_producto':row[2], 'nombre_producto':row[3], 'categoria_producto':row[4], 'sucursal':row[5], 'valor':row[6], 'stock':row[7], 'descripcion':row[8], 'img_producto':row[9],'cantidad_producto':row[10]}
+                productos_carrito.append(product)
+        else:
+            return jsonify({"mensaje":"Carrito Vacio"})
+
+        return jsonify({"mensaje":"Carrito Encontrado", "productos_carrito":productos_carrito})
+    except Exception as ex:
+        return jsonify({'mensaje':'Error al Agregar Producto al Carrito', 'descripcion_error':f"Error: {str(ex)}"})
+
+#* API Obtener Productos del Carrito por Id [GET]
+@app.route('/api/carrito/producto/<id_producto>', methods=["GET"])
+def obtener_producto_porid_carrito_(id_producto):
+    try:
+        cursor = conn.connect.cursor()
+        sql = "SELECT id_producto, cantidad_producto FROM carrito WHERE id_producto = {0}".format(id_producto)
+        cursor.execute(sql)
+        data = cursor.fetchone()
+        producto_carrito={}
+
+        if data:
+            producto_carrito = {"id_producto":data[0],"cantidad_producto":data[1]}
+            return jsonify({"mensaje":"Producto en Carrito Encontrado", "producto_carrito":producto_carrito})
+        else:
+            return jsonify({"mensaje":"Producto no se encuentra en el Carrito"})
+    except Exception as ex:
+        return jsonify({'mensaje':'Error al Bucar Productos en el Carrito', 'descripcion_error':f"Error: {str(ex)}"})
+
+#* API Eliminar Producto del Carrito por Id [DELETE]
+@app.route('/api/carrito/eliminar-producto/<id_producto>', methods=['DELETE'])
+def eliminar_producto_carrito(id_producto):
+    try:
+        api_carrito = url_base + "/api/carrito"
+        carrito = requests.get(api_carrito)
+        productos = carrito.json()
+        items = []
+
+        for product in productos["productos_carrito"]:
+            items.append(product["id_producto"])
+
+        if int(id_producto) in items:
+            cursor = conn.connection.cursor()
+            sql = f"DELETE from carrito WHERE id_producto = {id_producto}"
+            cursor.execute(sql)
+            conn.connection.commit()
+
+            return jsonify({"mensaje":"Producto Eliminado"})
+        else:
+            return jsonify({"mensaje":"Producto no se Encuentra Registrado en el Carrito"}),404
+    except Exception as ex:
+        return jsonify({'mensaje':'Error al Vaciar el Carrito', 'descripcion_error':f"Error: {str(ex)}"})
+    
+#* API Actualizar Cantidad de un Producto del Carrito [PUT]
+@app.route('/api/carrito/modificar-producto/<id_producto>', methods=["PUT"])
+def modificar_producto_carrito(id_producto):
+    try:
+        api_producto_en_carrito = url_base + f'/api/carrito/producto/{id_producto}'
+        request_api_producto_en_carrito = requests.get(api_producto_en_carrito)
+        producto_en_carrito = request_api_producto_en_carrito.json()
+
+        data = request.get_json()
+        nueva_cantidad = data.get("cantidad")
+
+        if not nueva_cantidad or not isinstance(nueva_cantidad, int) or nueva_cantidad <= 0:
+            return jsonify({"mensaje":"Cantidad Invalida"})
+        
+        if producto_en_carrito["mensaje"] == "Producto no se encuentra en el Carrito":
+            return jsonify({"mensaje":"Producto No existe en Carrito"})
+
+        api_get_producto = url_base + f"/api/obtener-producto-id/{id_producto}"
+        request_api_get_producto = requests.get(api_get_producto)
+        stock_producto = request_api_get_producto.json()["producto"]["stock"]
+        stock_producto = int(stock_producto)
+
+        if nueva_cantidad > stock_producto:
+            return jsonify({"mensaje":f"Cantidad ingresada supera el Stock Actual del Producto ({stock_producto})"})
+
+        cursor = conn.connection.cursor()
+        sql = f"UPDATE carrito SET cantidad_producto = {nueva_cantidad} WHERE id_producto = {id_producto}"
+        cursor.execute(sql)
+        conn.connection.commit()
+
+        return jsonify({"mensaje":"Cantidad del Producto Modificado"})
+    except Exception as ex:
+        return jsonify({'mensaje':'Error al Actualizar el Producto', 'descripcion_error':f"Error: {str(ex)}"})
+
+#* API Vaciar Carrito [DELETE]
+@app.route('/api/carrito/vaciar', methods=['DELETE'])
+def vaciar_carrito():
+    try:
+        cursor = conn.connection.cursor()
+        sql = "TRUNCATE TABLE carrito"
+        cursor.execute(sql)
+        conn.connect.commit()
+
+        return jsonify({"mensaje":"Carrito Vaciado"})
+    except Exception as ex:
+        return jsonify({'mensaje':'Error al Vaciar el Carrito', 'descripcion_error':f"Error: {str(ex)}"})
 
 #TODO Funcion Contacto
 

@@ -1,7 +1,7 @@
 <nav class="navbar nav-color nav-pills nav-fill">
     <ul class="nav">
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ url_for('home') }}">
                 <img class="img-fluid img-logo-navbar" src="{{ url_for('static', filename='img/logo/logo.png') }}"
                     alt="Ferremas_logo">
             </a>
@@ -9,7 +9,7 @@
     </ul>
     <ul class="nav justify-content-center">
         <li class="nav-item">
-            <a class="nav-link" href="#">Inicio</a>
+            <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#">Catalogo</a>
@@ -17,12 +17,30 @@
         <li class="nav-item">
             <a class="nav-link" href="#">Contacto</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('test') }}">Test</a>
+        </li>
     </ul>
     <ul class="nav justify-content-end">
+        <li class="nav-item d-flex">
+            <select id="tipoCambio" class="form-select form-select-sm" onchange="actualizarPrecios()">
+                <option value="CPL">Peso Chileno (CPL)</option>
+                <option value="USD">Dólar (USD)</option>
+            </select>
+        </li>
+        {% if carrito_length %}
+        <li class="nav-item carrito-wrapper">
+            <a class="nav-link" href="{{ url_for('carrito') }}">
+                <img src="{{ url_for('static', filename='img/icons/carrito.png') }}" alt="a">
+                <span class="notificacion">{{ carrito_length }}</span>
+            </a>
+        </li>
+        {% else %}
         <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ url_for('carrito') }}">
                 <img src="{{ url_for('static', filename='img/icons/carrito.png') }}" alt="a">
             </a>
         </li>
+        {% endif %}
     </ul>
 </nav>

@@ -1,0 +1,68 @@
+{% extends "components/layout.html" %}
+{% block content %}
+
+    <ul>
+        {% if carrito %}
+            {% for producto in carrito["productos_carrito"] %}
+            <li>
+                <form class="deleteProduct row gx-3 gy-2 align-items-center">
+                {{ carrito_delete_product.hidden_tag() }}
+                    {{ producto.id_producto }}{{ producto.codigo_producto }}{{ producto.marca_producto }}{{ producto.nombre_producto }}{{ producto.categoria_producto }}{{ producto.sucursal }}<span class="precio" data-valor="{{ producto.valor }}">{{ producto.valor }}</span>{{ producto.descripcion }}{{ producto.img_producto }} {{ producto.cantidad_producto }}
+                    <div class="col-sm-3">
+                        {{ carrito_delete_product.carrito_id_producto.label(class="form-control-label") }}
+                        {{ carrito_delete_product.carrito_id_producto(class="form-control form-control-lg", value=producto.id_producto) }}
+                    </div>
+                    <div class="col-auto">
+                    {{ carrito_delete_product.submit(class="btn btn-outline-danger") }}
+                    </div>
+                </form>
+                <form class="modifyProduct row gx-3 gy-2 align-items-center">
+                {{ carrito_modificar_producto.hidden_tag() }}
+                    <div class="col-sm-3">
+                        {{ carrito_modificar_producto.carrito_id_producto.label(class="form-control-label") }}
+                        {{ carrito_modificar_producto.carrito_id_producto(class="form-control form-control-lg", value=producto.id_producto) }}
+                    </div>
+                    <div class="col-sm-3">
+                        {{ carrito_modificar_producto.carrito_cantidad_producto.label(class="form-control-label") }}
+                        {{ carrito_modificar_producto.carrito_cantidad_producto(class="form-control form-control-lg", value=producto.cantidad_producto, max=producto.stock) }}
+                    </div>
+                    <div class="col-auto">
+                    {{ carrito_modificar_producto.submit(class="btn btn-outline-warning") }}
+                    </div>
+                </form>
+            </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+    <h6>Vaciar Carrito [DELETE]</h6>
+    <form id="deleteCart" class="row gx-3 gy-2 align-items-center">
+        {{ carrito_delete_form.hidden_tag() }}
+        <div class="col-auto">
+            {{ carrito_delete_form.submit(class="btn btn-outline-danger") }}
+        </div>
+    </form>
+    <form id="webpayForm" class="row gx-3 gy-2 align-items-center">
+        {{ form.hidden_tag() }}
+        <div class="col-sm-3">
+            {{ form.buy_order.label(class="form-control-label") }}
+            {{ form.buy_order(class="form-control form-control-lg", value=1) }}
+        </div>
+        <div class="col-sm-3">
+            {{ form.session.label(class="form-control-label") }}
+            {{ form.session(class="form-control form-control-lg", value=sesion) }}
+        </div>
+        <div class="col-sm-3">
+            {{ form.amount.label(class="form-control-label") }}
+            {{ form.amount(class="form-control form-control-lg") }}
+        </div>
+        <div class="col-auto">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+
+<script src="{{ url_for('static', filename='js/carrito/realizar_pago.js') }}"></script>
+<script src="{{ url_for('static', filename='js/carrito/modificar_producto.js')}}"></script>
+<script src="{{ url_for('static', filename='js/carrito/eliminar_producto.js')}}"></script>
+<script src="{{ url_for('static', filename='js/carrito/eliminar_carrito.js') }}"></script>
+
+{% endblock %}

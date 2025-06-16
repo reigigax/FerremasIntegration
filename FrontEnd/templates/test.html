@@ -20,7 +20,6 @@
     <div id="resultado"></div>
 
     <h6>Obtener Valor Dolar [GET]</h6>
-    <!--TODO hacer el combobox que modifique todos los valores en pesos a dolares-->
     <p>
         {% if dolar_value %}
             {{ dolar_value["Valor Dolar"] }}
@@ -32,7 +31,7 @@
         {{ form.hidden_tag() }}
         <div class="col-sm-3">
             {{ form.buy_order.label(class="form-control-label") }}
-            {{ form.buy_order(class="form-control form-control-lg") }}
+            {{ form.buy_order(class="form-control form-control-lg", value=1) }}
         </div>
         <div class="col-sm-3">
             {{ form.session.label(class="form-control-label") }}
@@ -47,6 +46,66 @@
         </div>
     </form>
 
+    <h6>Añadir Producto al Carrito [POST][PUT]</h6>
+    {% if products %}
+        {% for product in products.productos %}
+        <form class="addProductToCart row gx-3 gy-2 align-items-center">
+        {{ carrito_add_form.hidden_tag() }}
+            {{ product.id_producto }} {{ product.codigo_producto }} {{product.marca_producto}} {{product.nombre_producto}} {{product.categoria_producto}} {{product.stock}} {{product.sucursal}} {{product.valor}} {{product.descripcion}}{{product.img_producto}}
+                <div class="col-sm-3">
+                    {{ carrito_add_form.carrito_id_producto.label(class="form-control-label") }}
+                    {{ carrito_add_form.carrito_id_producto(class="form-control form-control-lg", value=product.id_producto) }}
+                </div>
+                <div class="col-sm-3">
+                    {{ carrito_add_form.carrito_cantidad_producto.label(class="form-control-label") }}
+                    {{ carrito_add_form.carrito_cantidad_producto(class="form-control form-control-lg") }}
+                </div>
+                <div class="col-auto">
+                    {{ carrito_add_form.submit(class="btn btn-outline-info") }}
+                </div>
+            </form>
+        {% endfor %}
+    {% endif %}
+    <h6>Visalizar Contenido del Carrito [GET]</h6>
+    <ul>
+        {% if carrito %}
+            {% for producto in carrito["productos_carrito"] %}
+            <li>
+                <form class="deleteProduct row gx-3 gy-2 align-items-center">
+                {{ carrito_delete_product.hidden_tag() }}
+                    {{ producto.id_producto }}{{ producto.codigo_producto }}{{ producto.marca_producto }}{{ producto.nombre_producto }}{{ producto.categoria_producto }}{{ producto.sucursal }}{{ producto.valor }}{{ producto.descripcion }}{{ producto.img_producto }} {{ producto.cantidad_producto }}
+                    <div class="col-sm-3">
+                        {{ carrito_delete_product.carrito_id_producto.label(class="form-control-label") }}
+                        {{ carrito_delete_product.carrito_id_producto(class="form-control form-control-lg", value=producto.id_producto) }}
+                    </div>
+                    <div class="col-auto">
+                    {{ carrito_delete_product.submit(class="btn btn-outline-danger") }}
+                    </div>
+                </form>
+                <form class="modifyProduct row gx-3 gy-2 align-items-center">
+                {{ carrito_modificar_producto.hidden_tag() }}
+                    <div class="col-sm-3">
+                        {{ carrito_modificar_producto.carrito_id_producto.label(class="form-control-label") }}
+                        {{ carrito_modificar_producto.carrito_id_producto(class="form-control form-control-lg", value=producto.id_producto) }}
+                    </div>
+                    <div class="col-sm-3">
+                        {{ carrito_modificar_producto.carrito_cantidad_producto.label(class="form-control-label") }}
+                        {{ carrito_modificar_producto.carrito_cantidad_producto(class="form-control form-control-lg", value=producto.cantidad_producto, max=producto.stock) }}
+                    </div>
+                    <div class="col-auto">
+                    {{ carrito_modificar_producto.submit(class="btn btn-outline-warning") }}
+                    </div>
+                </form>
+            </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+    <h6>Vaciar Carrito [DELETE]</h6>
+    <form id="deleteCart" class="row gx-3 gy-2 align-items-center">
+        {{ carrito_delete_form.hidden_tag() }}
+        <div class="col-auto">
+            {{ carrito_delete_form.submit(class="btn btn-outline-danger") }}
+        </div>
+    </form>
     <script src="{{ url_for('static', filename='js/test_buscar_productos.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/test_realizar_pago.js') }}"></script>
 {% endblock %}
