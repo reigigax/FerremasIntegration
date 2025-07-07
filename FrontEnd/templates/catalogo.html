@@ -1,0 +1,44 @@
+{% extends "components/layout.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-5 text-center fw-bold display-6 text-primary">Catálogo de Productos</h2>
+
+    {% if products and products['productos'] %}
+    <div class="row g-4">
+        {% for product in products['productos'] %}
+        <div class="col-sm-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="card h-100 border-0 shadow-sm rounded-4 hover-shadow transition">
+                <img src="{{ product.img_producto }}" class="card-img-top rounded-top-4" alt="{{ product.nombre_producto }}" style="object-fit: cover; height: 220px;">
+                
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <h5 class="card-title fw-semibold text-dark">{{ product.nombre_producto }}</h5>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-secondary">COD-{{ product.codigo_producto }}</span>
+                        {% if product.stock == 0 %}
+                            <span class="badge bg-danger">Sin Stock</span>
+                        {% else %}
+                            <span class="badge bg-success">{{ product.stock }} Unid.</span>
+                        {% endif %}
+                    </div>
+
+                    <p class="mb-1 text-muted"><strong>Marca:</strong> {{ product.marca_producto }}</p>
+                    <p class="mb-1 text-muted"><strong>Categoría:</strong> {{ product.categoria_producto }}</p>
+                    <p class="mb-2"><strong>Precio:</strong> <span class="text-primary fw-bold precio" data-valor="{{ product.valor }}">$ {{ product.valor | round(0, 'floor') }} CPL</span></p>
+                    
+                    <p class="card-text text-muted small">{{ product.descripcion }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center text-muted mt-5">
+        <i class="bi bi-box-seam display-4 mb-3"></i>
+        <p>No hay productos disponibles.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

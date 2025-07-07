@@ -25,15 +25,10 @@
   width: 50px;
 }
 
-.carrito-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
 .notificacion {
   position: absolute;
   top: -2px;
-  right: 5px;
+  right: 0px;
   background-color: red;
   color: white;
   border-radius: 100%;
@@ -41,4 +36,14 @@
   font-size: 8px;
   font-weight: bold;
   line-height: 1;
+}
+
+.hover-shadow:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.position-relative {
+  top:-8px;
 }

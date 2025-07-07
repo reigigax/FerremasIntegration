@@ -1,44 +1,39 @@
-<nav class="navbar nav-color nav-pills nav-fill">
-    <ul class="nav">
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home') }}">
-                <img class="img-fluid img-logo-navbar" src="{{ url_for('static', filename='img/logo/logo.png') }}"
-                    alt="Ferremas_logo">
-            </a>
-        </li>
-    </ul>
-    <ul class="nav justify-content-center">
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Catalogo</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Contacto</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('test') }}">Test</a>
-        </li>
-    </ul>
-    <ul class="nav justify-content-end">
-        <li class="nav-item d-flex">
-            <select id="tipoCambio" class="form-select form-select-sm" onchange="actualizarPrecios()">
-                <option value="CPL">Peso Chileno (CPL)</option>
-                <option value="USD">Dólar (USD)</option>
-            </select>
-        </li>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 py-2 shadow-sm">
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='img/logo/logo.png') }}" alt="Ferremas_logo" class="img-fluid" style="height: 40px;">
+    </a>
+
+    <div class="collapse navbar-collapse justify-content-center">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+            <li class="nav-item mx-2">
+                <a class="nav-link text-white fw-semibold" href="{{ url_for('home') }}">Inicio</a>
+            </li>
+            <li class="nav-item mx-2">
+                <a class="nav-link text-white fw-semibold" href="{{ url_for('catalogo') }}">Catálogo</a>
+            </li>
+            <li class="nav-item mx-2">
+                <a class="nav-link text-white fw-semibold" href="{{ url_for('contacto') }}">Contacto</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <select id="tipoCambio" class="form-select form-select-sm bg-light border-0 shadow-sm" onchange="actualizarPrecios()" style="width: auto;">
+            <option value="CPL">Peso Chileno (CPL)</option>
+            <option value="USD">Dólar (USD)</option>
+        </select>
+
         {% if carrito_length %}
-        <li class="nav-item carrito-wrapper">
-            <a class="nav-link" href="{{ url_for('carrito') }}">
-                <img src="{{ url_for('static', filename='img/icons/carrito.png') }}" alt="a">
+        <li class="nav-item">
+            <a class="nav-link position-relative" href="{{ url_for('carrito') }}">
+                <img src="{{ url_for('static', filename='img/icons/carrito.png') }}" alt="Carrito">
                 <span class="notificacion">{{ carrito_length }}</span>
             </a>
         </li>
         {% else %}
         <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('carrito') }}">
-                <img src="{{ url_for('static', filename='img/icons/carrito.png') }}" alt="a">
+            <a class="nav-link position-relative" href="{{ url_for('carrito') }}">
+                <img src="{{ url_for('static', filename='img/icons/carrito.png') }}" alt="Carrito">
             </a>
         </li>
         {% endif %}

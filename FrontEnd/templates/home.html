@@ -1,76 +1,78 @@
 {% extends "components/layout.html" %}
 {% block content %}
 
-{% if products %}
-<select class="form-select form-select" id="filtroSucursal" onchange="filtrarPorSucursal()">
-    <option value="todas">-- Selecciona una Sucursal --</option>
-    {% for product in products.productos %}
-    <option value="{{product.sucursal}}">{{product.sucursal}}</option>
-    {% endfor %}
-</select>
-{% endif %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4 text-primary fw-bold">Bienvenido a Ferremas</h2>
 
-<div class="row">
     {% if products %}
-        {% for product in products.productos %}
-                <div class="producto pt-3 col-3 mb-3 mb-sm-0" data-sucursal="{{ product.sucursal }}">
-                    <div class="card">
-                            <div class="row justify-content-center">
-                                <img src="{{ product.img_producto }}" class="card-img-top" style="height: 20rem; width: 22rem;" alt="Product_Image">
-                            </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.nombre_producto }}</h5>
-                            <div class="row align-items-start">
-                                <div class="col">
-                                    <p class="text-sm-start">COD-{{ product.codigo_producto }}</p>
-                                </div>
-                                <div class="col">
-                                {% if product.stock == 0 %}
-                                    <p class="text-sm-end text-danger">No Disponible</p>
-                                {% else %}
-                                    <p class="text-sm-end">{{ product.stock }} Unid.</p>
-                                {% endif %}
-                                </div>
-                            </div>
-                            
-                            <div class="row align-items-start">
-                                <div class="col-4">
-                                    <p class="card-text text-sm-start">{{ product.marca_producto }}</p>
-                                </div>
-                                <div class="col-8">
-                                    <p class="precio card-text text-sm-end text-black" data-valor="{{ product.valor }}">$ {{ product.valor }} CPL</p>        
-                                </div>
-                            </div>
+    <div class="mb-4">
+        <label for="filtroSucursal" class="form-label fw-semibold">Filtrar por sucursal:</label>
+        <select class="form-select" id="filtroSucursal" onchange="filtrarPorSucursal()">
+            <option value="todas" selected disabled>-- Selecciona una Sucursal --</option>
+            {% set sucursales_unicas = [] %}
+            {% for product in products.productos %}
+            {% if product.sucursal not in sucursales_unicas %}
+            <option value="{{ product.sucursal }}">{{ product.sucursal }}</option>
+            {% set _ = sucursales_unicas.append(product.sucursal) %}
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
 
-                            <p class="card-text">{{ product.descripcion }}</p>
-                        </div>
-                        <div class="card-body">
-                            <form class="addProductToCart row g-3 justify-content-center">
-                            {{ carrito_add_form.hidden_tag() }}
-                                <div class="col-auto d-none">
-                                    {{ carrito_add_form.carrito_id_producto.label(class="visually-hidden") }}
-                                    {{ carrito_add_form.carrito_id_producto(class="visually-hidden", value=product.id_producto) }}
-                                </div>
-                                <div class="col-auto">
-                                    {{ carrito_add_form.carrito_cantidad_producto.label(class="form-control-plaintext") }}
-                                </div>
-                                <div class="col-3">
-                                    {{ carrito_add_form.carrito_cantidad_producto(class="form-control", value=1) }}
-                                </div>
-                                {% if product.stock == 0 %}
-                                    <div class="col-auto">
-                                        {{ carrito_add_form.submit(class="btn btn-secondary mb-3 disabled") }}
-                                    </div>
-                                {% else %}
-                                    <div class="col-auto">
-                                        {{ carrito_add_form.submit(class="btn btn-primary mb-3") }}
-                                    </div>
-                                {% endif %}
-                            </form>
-                        </div>
+    <div id="mensajeSeleccion" class="text-center text-muted mb-4">
+        <i class="bi bi-shop display-6 d-block mb-2"></i>
+        <p>Selecciona una sucursal para ver los productos disponibles.</p>
+    </div>
+
+    <div id="contenedorProductos" class="row g-4 d-none">
+        {% for product in products.productos %}
+        <div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 producto" data-sucursal="{{ product.sucursal }}">
+            <div class="card h-100 shadow-sm border-0 rounded-4 hover-shadow">
+                <img src="{{ product.img_producto }}" class="card-img-top rounded-top-4"
+                    style="object-fit: cover; height: 240px;" alt="Imagen {{ product.nombre_producto }}">
+
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ product.nombre_producto }}</h5>
+
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>COD-{{ product.codigo_producto }}</span>
+                        {% if product.stock == 0 %}
+                        <span class="text-danger">No disponible</span>
+                        {% else %}
+                        <span class="text-success">{{ product.stock }} Unid.</span>
+                        {% endif %}
                     </div>
+
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">{{ product.marca_producto }}</span>
+                        <span class="text-primary fw-bold precio" data-valor="{{ product.valor }}">${{ product.valor |
+                            round(0, 'floor') }} CPL</span>
+                    </div>
+
+                    <p class="mt-2 text-muted small">{{ product.descripcion }}</p>
                 </div>
+
+                <div class="card-body pt-0">
+                    <form class="addProductToCart row gx-2 gy-2 justify-content-center"
+                        onsubmit="return agregarAlCarrito(event, '{{ product.id_producto }}')">
+
+                        <div class="col-4">
+                            <input name="carrito_cantidad_producto" type="number" class="form-control" value="1" min="1"
+                                max="{{ product.stock }}">
+                        </div>
+                        <div class="col-auto">
+                            {% if product.stock == 0 %}
+                            <button class="btn btn-secondary disabled" disabled>Agregar</button>
+                            {% else %}
+                            <button type="submit" class="btn btn-outline-primary">Agregar</button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endfor %}
+    </div>
     {% endif %}
 </div>
 

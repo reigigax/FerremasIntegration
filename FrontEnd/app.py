@@ -43,6 +43,7 @@ def home():
     else:
         return render_template("home.html")
 
+
 @app.route('/carrito', methods=['POST', 'GET'])
 def carrito():
     webpay_form = TransactionForm()
@@ -51,20 +52,68 @@ def carrito():
     carrito_modificar_producto_form = ModifyProductOnCartForm()
 
     sesion = app.secret_key
+    subtotal = 0
+    carrito_length = 0
 
+    get_carrito = requests.get(api_obtener_carrito)
+    json_carrito = get_carrito.json()
+
+    if json_carrito:
+        if json_carrito["mensaje"] == "Carrito Encontrado":
+            for producto in json_carrito["productos_carrito"]:
+                subtotal = subtotal + float(producto["valor"])*float(producto["cantidad_producto"])
+                carrito_length = carrito_length + 1
+        else:
+            carrito_length = 0
+        return render_template("carrito.html", carrito=json_carrito, carrito_delete_product=carrito_delete_product_form, carrito_delete_form=delete_carrito_form, carrito_modificar_producto=carrito_modificar_producto_form, form=webpay_form, sesion=sesion, carrito_length=carrito_length, subtotal=subtotal)
+    else:
+        return render_template("carrito.html")
+
+
+@app.route('/contacto', methods=['GET', 'POST'])
+def contacto():
     get_carrito = requests.get(api_obtener_carrito)
     json_carrito = get_carrito.json()
 
     if json_carrito:
         carrito_length = 0
         if json_carrito["mensaje"] == "Carrito Encontrado":
+            print(json_carrito["productos_carrito"])
             for producto in json_carrito["productos_carrito"]:
                 carrito_length = carrito_length + 1
-            else:
-                carrito_length = 0
-        return render_template("carrito.html", carrito=json_carrito, carrito_delete_product=carrito_delete_product_form, carrito_delete_form=delete_carrito_form, carrito_modificar_producto=carrito_modificar_producto_form, form=webpay_form, sesion=sesion, carrito_length=carrito_length)
-    else:
-        return render_template("carrito.html")
+        else:
+            carrito_length = 0
+
+    if request.method == 'POST':
+        # lógica de formulario
+        pass
+    return render_template('contacto.html', carrito_length=carrito_length)
+
+
+@app.route('/catalogo')
+def catalogo():
+    get_carrito = requests.get(api_obtener_carrito)
+    json_carrito = get_carrito.json()
+
+    if json_carrito:
+        carrito_length = 0
+        if json_carrito["mensaje"] == "Carrito Encontrado":
+            print(json_carrito["productos_carrito"])
+            for producto in json_carrito["productos_carrito"]:
+                carrito_length = carrito_length + 1
+        else:
+            carrito_length = 0
+
+    try:
+        response = requests.get(api_obtener_productos)
+        data = response.json()  # Solo necesitas hacerlo una vez
+
+        return render_template('catalogo.html', products=data, carrito_length=carrito_length)  # data es un dict con clave 'productos'
+
+    except Exception as e:
+        print(f"Error al obtener productos: {e}")
+        return render_template('catalogo.html', products={"productos": []})
+
 
 #?Ruta de Pruebas
 @app.route('/', methods=['POST', 'GET'])

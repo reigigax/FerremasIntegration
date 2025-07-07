@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const confirmar = confirm("¿Estas seguro de MODIFICAR este producto del carrito?");
-            if(!confirmar) {location.reload()};
+            if(!confirmar) {return};
 
             try {
                 const response = await fetch("http://127.0.0.1:5001/api/carrito/modificar-producto/"+idProducto, {

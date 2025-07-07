@@ -191,7 +191,15 @@ def agregar_producto_carrito(id_producto):
         
         if quantity_product <= 0:
             return jsonify({"mensaje":"Cantidad para Agregar debe de ser mayor o igual a 1"})
-        
+
+        api_get_producto = url_base + f"/api/obtener-producto-id/{id_producto}"
+        request_api_get_producto = requests.get(api_get_producto)
+        stock_producto = request_api_get_producto.json()["producto"]["stock"]
+        stock_producto = int(stock_producto)
+
+        if quantity_product > stock_producto:
+            return jsonify({"mensaje":f"Cantidad ingresada supera el Stock Actual del Producto ({stock_producto})"})
+
         if producto_in_carrito["mensaje"] == "Producto no se encuentra en el Carrito":
             if 'producto' not in data_product:
                 return jsonify({"error": "Producto no encontrado"}), 404
@@ -324,8 +332,6 @@ def vaciar_carrito():
         return jsonify({"mensaje":"Carrito Vaciado"})
     except Exception as ex:
         return jsonify({'mensaje':'Error al Vaciar el Carrito', 'descripcion_error':f"Error: {str(ex)}"})
-
-#TODO Funcion Contacto
 
 #! Pagina de Error API
 def page_not_found(error):

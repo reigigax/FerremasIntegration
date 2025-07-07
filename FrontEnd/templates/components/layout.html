@@ -21,7 +21,7 @@
     {% include "components/navbar/navbar.html" %}
 
     <!--Mensajes Flash-->
-    <div class="container pt-3">
+    <div class="container pt-4">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -36,6 +36,9 @@
         {% block content %}{% endblock %}
     </div>
 
+    <!-- Scripts globales -->
+    <script src="{{ url_for('static', filename='js/navbar/actualizar_precios_segun_moneda.js') }}"></script>
+
     <!--Funciones del Navbar (actualizar precio segun moneda) JS-->
     <script src="{{ url_for('static', filename='js/navbar/actualizar_precios_segun_moneda.js') }}"></script>
 
@@ -49,6 +52,21 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.min.js"
         integrity="sha384-RuyvpeZCxMJCqVUGFI0Do1mQrods/hhxYlcVfGPOfQtPJh0JCw12tUAZ/Mv10S7D"
         crossorigin="anonymous"></script>
-</body>
 
+    <!-- Validación de formularios Bootstrap -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        });
+    </script>
+</body>
 </html>

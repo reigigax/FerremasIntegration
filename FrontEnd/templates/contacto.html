@@ -1,0 +1,81 @@
+{% extends "components/layout.html" %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+
+      <h2 class="text-center text-primary fw-bold mb-4">Contáctanos en Ferremas</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('contacto') }}" novalidate>
+        <div class="mb-3">
+          <label for="nombre" class="form-label">Nombre completo</label>
+          <input type="text" class="form-control" id="nombre" name="nombre" required minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$">
+          <div class="invalid-feedback">
+            Por favor ingresa solo letras y espacios en tu nombre.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Correo electrónico</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+          <div class="invalid-feedback">
+            Ingresa un correo electrónico válido.
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="mensaje" class="form-label">Mensaje</label>
+          <textarea class="form-control" id="mensaje" name="mensaje" rows="4" required minlength="5" maxlength="1000"></textarea>
+          <div class="invalid-feedback">
+            Escribe un mensaje de al menos 5 caracteres.
+          </div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-outline-primary btn-lg">Enviar Mensaje</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Validación de Bootstrap
+  (function () {
+    'use strict';
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+
+  // Validar que el campo nombre no acepte números
+  document.getElementById("nombre").addEventListener("input", function () {
+    const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$/;
+    if (!regex.test(this.value)) {
+      this.setCustomValidity("El nombre no puede contener números ni caracteres especiales.");
+    } else {
+      this.setCustomValidity("");
+    }
+  });
+</script>
+{% endblock %}

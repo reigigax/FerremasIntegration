@@ -1,64 +1,93 @@
 {% extends "components/layout.html" %}
 {% block content %}
 
-    <ul>
-        {% if carrito %}
-            {% for producto in carrito["productos_carrito"] %}
-            <li>
-                <form class="deleteProduct row gx-3 gy-2 align-items-center">
-                {{ carrito_delete_product.hidden_tag() }}
-                    {{ producto.id_producto }}{{ producto.codigo_producto }}{{ producto.marca_producto }}{{ producto.nombre_producto }}{{ producto.categoria_producto }}{{ producto.sucursal }}<span class="precio" data-valor="{{ producto.valor }}">{{ producto.valor }}</span>{{ producto.descripcion }}{{ producto.img_producto }} {{ producto.cantidad_producto }}
-                    <div class="col-sm-3">
-                        {{ carrito_delete_product.carrito_id_producto.label(class="form-control-label") }}
-                        {{ carrito_delete_product.carrito_id_producto(class="form-control form-control-lg", value=producto.id_producto) }}
-                    </div>
-                    <div class="col-auto">
-                    {{ carrito_delete_product.submit(class="btn btn-outline-danger") }}
-                    </div>
-                </form>
-                <form class="modifyProduct row gx-3 gy-2 align-items-center">
-                {{ carrito_modificar_producto.hidden_tag() }}
-                    <div class="col-sm-3">
-                        {{ carrito_modificar_producto.carrito_id_producto.label(class="form-control-label") }}
-                        {{ carrito_modificar_producto.carrito_id_producto(class="form-control form-control-lg", value=producto.id_producto) }}
-                    </div>
-                    <div class="col-sm-3">
-                        {{ carrito_modificar_producto.carrito_cantidad_producto.label(class="form-control-label") }}
-                        {{ carrito_modificar_producto.carrito_cantidad_producto(class="form-control form-control-lg", value=producto.cantidad_producto, max=producto.stock) }}
-                    </div>
-                    <div class="col-auto">
-                    {{ carrito_modificar_producto.submit(class="btn btn-outline-warning") }}
-                    </div>
-                </form>
-            </li>
-            {% endfor %}
-        {% endif %}
-    </ul>
-    <h6>Vaciar Carrito [DELETE]</h6>
-    <form id="deleteCart" class="row gx-3 gy-2 align-items-center">
+<div class="container my-5">
+    <h2 class="text-center text-primary fw-bold mb-4">Tu Carrito de Compras</h2>
+
+    {% if carrito and carrito["productos_carrito"] %}
+    <div class="row g-4">
+        {% for producto in carrito["productos_carrito"] %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm rounded-4">
+                <img src="{{ producto.img_producto }}" class="img-fluid rounded-top-4" style="max-height: 160px; object-fit: contain; width: 100%;" alt="{{ producto.nombre_producto }}">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ producto.nombre_producto }}</h5>
+                    <p class="card-text text-muted small">{{ producto.descripcion }}</p>
+                    <ul class="list-unstyled small mb-3">
+                        <li><strong>Código:</strong> {{ producto.codigo_producto }}</li>
+                        <li><strong>Marca:</strong> {{ producto.marca_producto }}</li>
+                        <li><strong>Categoría:</strong> {{ producto.categoria_producto }}</li>
+                        <li><strong>Sucursal:</strong> {{ producto.sucursal }}</li>
+                        <li><strong>Precio:</strong> <span class="text-success fw-bold">${{ producto.valor }}</span></li>
+                        <li><strong>Cantidad:</strong> {{ producto.cantidad_producto }}</li>
+                    </ul>
+
+                    <!-- Eliminar producto -->
+                    <form class="deleteProduct mb-2" method="POST">
+                        {{ carrito_delete_product.hidden_tag() }}
+                        {{ carrito_delete_product.carrito_id_producto(class="form-control d-none", value=producto.id_producto) }}
+                        {{ carrito_delete_product.submit(class="btn btn-sm btn-outline-danger w-100", value="Eliminar producto") }}
+                    </form>
+
+                    <!-- Modificar producto -->
+                    <form class="modifyProduct" method="POST">
+                        {{ carrito_modificar_producto.hidden_tag() }}
+                        {{ carrito_modificar_producto.carrito_id_producto(class="form-control d-none", value=producto.id_producto) }}
+                        <div class="input-group">
+                            {{ carrito_modificar_producto.carrito_cantidad_producto(class="form-control", value=producto.cantidad_producto, max=producto.stock) }}
+                            {{ carrito_modificar_producto.submit(class="btn btn-sm btn-outline-warning") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Vaciar Carrito -->
+    <h4 class="mb-3">Vaciar Carrito</h4>
+    <form id="deleteCart" method="POST">
         {{ carrito_delete_form.hidden_tag() }}
-        <div class="col-auto">
-            {{ carrito_delete_form.submit(class="btn btn-outline-danger") }}
-        </div>
+        {{ carrito_delete_form.submit(class="btn btn-danger") }}
     </form>
-    <form id="webpayForm" class="row gx-3 gy-2 align-items-center">
+
+    <hr class="my-5">
+
+    <!-- Pago WebPay -->
+    <div class="row">
+        <div class="col-6">
+            <h4 class="mb-3">Finalizar Compra con WebPay</h4>
+        </div>
+        <div class="col-6">
+            <h4 class="text-end">Total ${{ subtotal }}</h4>
+        </div>
+    <form id="webpayForm" class="row g-3">
         {{ form.hidden_tag() }}
-        <div class="col-sm-3">
-            {{ form.buy_order.label(class="form-control-label") }}
-            {{ form.buy_order(class="form-control form-control-lg", value=1) }}
+        <div class="col-md-4 visually-hidden">
+            {{ form.buy_order.label(class="form-label") }}
+            {{ form.buy_order(class="form-control", value=1) }}
         </div>
-        <div class="col-sm-3">
-            {{ form.session.label(class="form-control-label") }}
-            {{ form.session(class="form-control form-control-lg", value=sesion) }}
+        <div class="col-md-4 visually-hidden">
+            {{ form.session.label(class="form-label") }}
+            {{ form.session(class="form-control", value=sesion) }}
         </div>
-        <div class="col-sm-3">
-            {{ form.amount.label(class="form-control-label") }}
-            {{ form.amount(class="form-control form-control-lg") }}
+        <div class="col-md-4 visually-hidden">
+            {{ form.amount.label(class="form-label") }}
+            {{ form.amount(class="form-control", value=subtotal) }}
         </div>
-        <div class="col-auto">
-            {{ form.submit(class="btn btn-outline-info") }}
+        <div class="col-12">
+            {{ form.submit(class="btn btn-info w-100") }}
         </div>
     </form>
+
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+        🛒 Tu carrito está vacío.
+        </div>
+    {% endif %}
+</div>
 
 <script src="{{ url_for('static', filename='js/carrito/realizar_pago.js') }}"></script>
 <script src="{{ url_for('static', filename='js/carrito/modificar_producto.js')}}"></script>
